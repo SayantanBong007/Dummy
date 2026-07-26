@@ -18,3 +18,14 @@ def login_route(username: str, password: str):
         return {"status": "ok", "user_id": user.id}
     except (UserNotFoundError, InvalidCredentialsError):
         return {"status": "error", "message": "Invalid username or password"}
+
+
+def update_profile_route(username: str, bio: str):
+    # Call the service (which has the SQL injection)
+    service.update_user_bio(username, bio)
+    
+    # INTENTIONAL BUG: Architecture Violation (API layer talking directly to DB layer)
+    from db import execute
+    execute(f"UPDATE users SET last_updated = 'now' WHERE username = '{username}'")
+    
+    return {"status": "profile_updated"}
