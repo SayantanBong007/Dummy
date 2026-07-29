@@ -1,0 +1,43 @@
+name: ArchFox PR Review
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout target repository
+        uses: actions/checkout@v4
+        
+      - name: Checkout ArchFox
+        uses: actions/checkout@v4
+        with:
+          repository: SayantanBong007/ArchFox
+          path: archfox_tool
+          
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          
+      - name: Install ArchFox Dependencies
+        run: |
+          cd archfox_tool
+          pip install -r requirements.txt
+          
+      - name: Run ArchFox Review
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HF_HUB_OFFLINE: "1"
+          TRANSFORMERS_OFFLINE: "1"
+        run: |
+          cd archfox_tool
+          python apps/cli/main.py --repo https://github.com/${{ github.repository }} --pr ${{ github.event.pull_request.number }}
