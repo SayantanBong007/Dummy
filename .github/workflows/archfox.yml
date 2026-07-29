@@ -12,7 +12,7 @@ jobs:
   review:
     runs-on: ubuntu-latest
     
-    # Spin up a Neo4j database and wait for it to be healthy!
+    # Spin up Neo4j
     services:
       neo4j:
         image: neo4j:5
@@ -20,12 +20,6 @@ jobs:
           NEO4J_AUTH: neo4j/kitsune_password
         ports:
           - 7687:7687
-          - 7474:7474
-        options: >-
-          --health-cmd="wget --no-verbose --tries=1 --spider http://localhost:7474 || exit 1"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=10
     
     steps:
       - name: Checkout target repository
@@ -41,6 +35,19 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+          
+      - name: Wait for Neo4j to be ready
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y netcat-openbsd
+          for i in {1..40}; do
+            if nc -z localhost 7687; then
+              echo "Neo4j Bolt port reachable!"
+              break
+            fi
+            echo "Waiting for Neo4j... ($i/40)"
+            sleep 3
+          done
           
       - name: Install ArchFox Dependencies
         run: |
