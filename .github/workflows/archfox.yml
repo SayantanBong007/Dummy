@@ -12,12 +12,12 @@ jobs:
   review:
     runs-on: ubuntu-latest
     
+    # Spin up Neo4j 4.4 (Stable and lightweight for CI)
     services:
       neo4j:
-        image: neo4j:5
+        image: neo4j:4.4
         env:
           NEO4J_AUTH: neo4j/kitsune_password
-          NEO4J_server_default__listen__address: 0.0.0.0
         ports:
           - 7687:7687
     
@@ -40,14 +40,19 @@ jobs:
         run: |
           sudo apt-get update -y
           sudo apt-get install -y netcat-openbsd
+          
+          # Wait up to 2 minutes for Neo4j
           for i in {1..40}; do
             if nc -z localhost 7687; then
               echo "Neo4j Bolt port reachable!"
-              break
+              exit 0
             fi
             echo "Waiting for Neo4j... ($i/40)"
             sleep 3
           done
+          
+          echo "ERROR: Neo4j never started! Check the 'Initialize containers' step logs."
+          exit 1
           
       - name: Install ArchFox Dependencies
         run: |
