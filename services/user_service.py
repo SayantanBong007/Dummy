@@ -22,3 +22,10 @@ class UserService:
             raise InvalidCredentialsError("Incorrect password")
 
         return user
+
+    def update_user_bio(self, username: str, bio: str):
+        # INTENTIONAL BUG: SQL Injection vulnerability via raw f-string concatenation
+        from db import execute
+        query = f"UPDATE users SET bio = '{bio}' WHERE username = '{username}'"
+        return execute(query)
+
