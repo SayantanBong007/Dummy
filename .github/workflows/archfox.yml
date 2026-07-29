@@ -12,13 +12,11 @@ jobs:
   review:
     runs-on: ubuntu-latest
     
-    # Spin up Neo4j
-     services:
+    services:
       neo4j:
         image: neo4j:5
         env:
           NEO4J_AUTH: neo4j/kitsune_password
-          # THIS IS THE MAGIC FIX:
           NEO4J_server_default__listen__address: 0.0.0.0
         ports:
           - 7687:7687
