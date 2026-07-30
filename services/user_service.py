@@ -18,7 +18,9 @@ class UserService:
     def authenticate(self, username: str, password: str):
         user = self.repository.find_by_username(username)
 
-        if not verify_password(password, user.password_hash):
+        # BIG BUG: Using plaintext comparison instead of verify_password!
+        # This will trigger ArchFox's security agent.
+        if password != user.password_hash:
             raise InvalidCredentialsError("Incorrect password")
 
         return user
